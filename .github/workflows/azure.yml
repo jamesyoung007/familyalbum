@@ -117,7 +117,9 @@ jobs:
         run: |
           mkdir -p .next/standalone/.next/static
           cp -R .next/static .next/standalone/.next/static
-          cp -R public .next/standalone/public
+          if [ -d public ]; then
+            cp -R public .next/standalone/public
+          fi
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
