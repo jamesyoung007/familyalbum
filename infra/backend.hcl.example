@@ -1,0 +1,8 @@
+use_oidc             = true
+client_id            = "replace-with-arm-client-id"
+tenant_id            = "replace-with-arm-tenant-id"
+subscription_id      = "replace-with-arm-subscription-id"
+resource_group_name  = "rg-familyalbum-tfstate"
+storage_account_name = "replacewithstateaccount"
+container_name       = "tfstate"
+key                  = "familyalbum-prod.tfstate"

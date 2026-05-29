@@ -1,0 +1,13 @@
+.env*.local
+.next
+node_modules
+npm-debug.log*
+dist
+coverage
+.DS_Store
+.terraform
+.terraform.lock.hcl
+terraform.tfstate*
+*.tfplan
+infra/backend.hcl
+infra/*.auto.tfvars

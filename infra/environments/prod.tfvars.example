@@ -1,0 +1,9 @@
+project_name         = "familyalbum"
+environment          = "prod"
+location             = "australiaeast"
+app_service_sku_name = "B1"
+
+allowed_emails = [
+  "person1@gmail.com",
+  "person2@gmail.com"
+]

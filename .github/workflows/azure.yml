@@ -1,0 +1,131 @@
+name: Azure Infrastructure and App
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: read
+
+env:
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+  ARM_USE_OIDC: "true"
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+  TF_VAR_google_client_id: ${{ secrets.TF_VAR_GOOGLE_CLIENT_ID }}
+  TF_VAR_google_client_secret: ${{ secrets.TF_VAR_GOOGLE_CLIENT_SECRET }}
+  TF_VAR_nextauth_secret: ${{ secrets.TF_VAR_NEXTAUTH_SECRET }}
+  TF_VAR_allowed_emails: ${{ secrets.TF_VAR_ALLOWED_EMAILS_JSON }}
+
+jobs:
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    outputs:
+      web_app_name: ${{ steps.tf-output.outputs.web_app_name }}
+      web_app_url: ${{ steps.tf-output.outputs.web_app_url }}
+      google_oauth_redirect_uri: ${{ steps.tf-output.outputs.google_oauth_redirect_uri }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.12.1
+          terraform_wrapper: false
+
+      - name: Terraform Format Check
+        working-directory: infra
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init
+        working-directory: infra
+        run: |
+          terraform init \
+            -backend-config="use_oidc=true" \
+            -backend-config="client_id=${{ secrets.ARM_CLIENT_ID }}" \
+            -backend-config="tenant_id=${{ secrets.ARM_TENANT_ID }}" \
+            -backend-config="subscription_id=${{ secrets.ARM_SUBSCRIPTION_ID }}" \
+            -backend-config="resource_group_name=${{ secrets.TF_STATE_RESOURCE_GROUP_NAME }}" \
+            -backend-config="storage_account_name=${{ secrets.TF_STATE_STORAGE_ACCOUNT_NAME }}" \
+            -backend-config="container_name=${{ secrets.TF_STATE_CONTAINER_NAME }}" \
+            -backend-config="key=${{ secrets.TF_STATE_KEY }}"
+
+      - name: Terraform Validate
+        working-directory: infra
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: infra
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        if: github.event_name != 'pull_request'
+        working-directory: infra
+        run: terraform apply -auto-approve tfplan
+
+      - name: Terraform Outputs
+        if: github.event_name != 'pull_request'
+        id: tf-output
+        working-directory: infra
+        run: |
+          echo "web_app_name=$(terraform output -raw web_app_name)" >> "$GITHUB_OUTPUT"
+          echo "web_app_url=$(terraform output -raw web_app_url)" >> "$GITHUB_OUTPUT"
+          echo "google_oauth_redirect_uri=$(terraform output -raw google_oauth_redirect_uri)" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Deploy App
+    needs: terraform
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.ARM_CLIENT_ID }}
+          tenant-id: ${{ secrets.ARM_TENANT_ID }}
+          subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Prepare Standalone Artifact
+        run: |
+          mkdir -p .next/standalone/.next/static
+          cp -R .next/static .next/standalone/.next/static
+          cp -R public .next/standalone/public
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ needs.terraform.outputs.web_app_name }}
+          package: .next/standalone
+
+      - name: Deployment Summary
+        run: |
+          echo "App URL: ${{ needs.terraform.outputs.web_app_url }}"
+          echo "Google OAuth redirect URI: ${{ needs.terraform.outputs.google_oauth_redirect_uri }}"
