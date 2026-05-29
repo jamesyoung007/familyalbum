@@ -3,6 +3,9 @@ environment          = "prod"
 location             = "australiaeast"
 app_service_sku_name = "B1"
 
+custom_domain_enabled  = false
+custom_domain_hostname = "album.example.com"
+
 allowed_emails = [
   "person1@gmail.com",
   "person2@gmail.com"

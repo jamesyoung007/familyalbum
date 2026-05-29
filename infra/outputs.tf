@@ -13,9 +13,14 @@ output "web_app_url" {
   value       = module.web_app.url
 }
 
+output "custom_domain_url" {
+  description = "Custom domain URL when enabled."
+  value       = local.custom_domain_url
+}
+
 output "google_oauth_redirect_uri" {
   description = "Add this URI to the Google OAuth client after the first Terraform apply."
-  value       = "${module.web_app.url}/api/auth/callback/google"
+  value       = "${coalesce(local.custom_domain_url, module.web_app.url)}/api/auth/callback/google"
 }
 
 output "photo_storage_account_name" {

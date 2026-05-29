@@ -22,7 +22,7 @@ module "web_app" {
   location                  = azurerm_resource_group.main.location
   service_plan_name         = local.app_service_plan
   service_plan_sku_name     = var.app_service_sku_name
-  app_url                   = local.app_url
+  app_url                   = coalesce(local.custom_domain_url, local.app_url)
   google_client_id          = var.google_client_id
   google_client_secret      = var.google_client_secret
   nextauth_secret           = var.nextauth_secret

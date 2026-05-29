@@ -32,6 +32,35 @@ variable "app_service_sku_name" {
   default     = "B1"
 }
 
+variable "custom_domain_enabled" {
+  description = "Whether to configure a Cloudflare-managed custom hostname for the Azure Web App."
+  type        = bool
+  default     = false
+}
+
+variable "custom_domain_hostname" {
+  description = "Full hostname to use for the app, for example album.example.com."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = !var.custom_domain_enabled || can(regex("^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$", var.custom_domain_hostname))
+    error_message = "custom_domain_hostname must be a valid full hostname when custom_domain_enabled is true."
+  }
+}
+
+variable "cloudflare_zone_id" {
+  description = "Cloudflare zone ID for the domain that owns custom_domain_hostname."
+  type        = string
+  default     = ""
+  sensitive   = true
+
+  validation {
+    condition     = !var.custom_domain_enabled || length(var.cloudflare_zone_id) > 0
+    error_message = "cloudflare_zone_id is required when custom_domain_enabled is true."
+  }
+}
+
 variable "google_client_id" {
   description = "Google OAuth web application client ID."
   type        = string

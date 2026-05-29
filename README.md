@@ -113,6 +113,41 @@ https://app-familyalbum-prod-xxxxxx.azurewebsites.net/api/auth/callback/google
 
 Add that URI to your Google OAuth client.
 
+## Optional: Cloudflare Custom Domain
+
+The Terraform workflow can manage a Cloudflare DNS hostname and bind it to Azure App Service with an Azure-managed TLS certificate.
+
+Use a Cloudflare **API token**, not the global API key. Give it the least privilege needed for one zone:
+
+```text
+Zone:Read
+DNS:Edit
+```
+
+Then add these GitHub repository secrets:
+
+```text
+CLOUDFLARE_API_TOKEN
+TF_VAR_CLOUDFLARE_ZONE_ID
+TF_VAR_CUSTOM_DOMAIN_ENABLED
+TF_VAR_CUSTOM_DOMAIN_HOSTNAME
+```
+
+Use these values:
+
+```text
+TF_VAR_CUSTOM_DOMAIN_ENABLED=true
+TF_VAR_CUSTOM_DOMAIN_HOSTNAME=album.yourdomain.com
+```
+
+Keep the Cloudflare record DNS-only at first. Terraform sets `proxied = false` so Azure can validate the hostname and issue the managed certificate. After the first successful deployment and certificate binding, you can decide whether to proxy it through Cloudflare.
+
+After the custom domain workflow succeeds, add the new Google OAuth redirect URI:
+
+```text
+https://album.yourdomain.com/api/auth/callback/google
+```
+
 ## Step 6: Local Development
 
 For local development only, `.env.local` still needs local values:
