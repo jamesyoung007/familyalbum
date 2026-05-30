@@ -26,6 +26,17 @@ resource "cloudflare_dns_record" "app_txt_validation" {
   comment = "Managed by Terraform for Azure App Service custom domain validation."
 }
 
+resource "time_sleep" "wait_for_custom_domain_dns" {
+  count = var.custom_domain_enabled ? 1 : 0
+
+  create_duration = "120s"
+
+  depends_on = [
+    cloudflare_dns_record.app_cname,
+    cloudflare_dns_record.app_txt_validation
+  ]
+}
+
 resource "azurerm_app_service_custom_hostname_binding" "app" {
   count = var.custom_domain_enabled ? 1 : 0
 
@@ -34,8 +45,7 @@ resource "azurerm_app_service_custom_hostname_binding" "app" {
   resource_group_name = azurerm_resource_group.main.name
 
   depends_on = [
-    cloudflare_dns_record.app_cname,
-    cloudflare_dns_record.app_txt_validation
+    time_sleep.wait_for_custom_domain_dns
   ]
 }
 
