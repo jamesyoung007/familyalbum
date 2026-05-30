@@ -127,12 +127,15 @@ jobs:
           if [ -d public ]; then
             cp -R public .next/standalone/public
           fi
+          test -n "$(find .next/standalone/.next/static/css -name '*.css' -print -quit)"
+          cd .next/standalone
+          zip -r ../../standalone.zip .
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ needs.terraform.outputs.web_app_name }}
-          package: .next/standalone
+          package: standalone.zip
 
       - name: Deployment Summary
         run: |
