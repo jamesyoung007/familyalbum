@@ -129,16 +129,16 @@ Then add these GitHub repository secrets:
 ```text
 CLOUDFLARE_API_TOKEN
 TF_VAR_CLOUDFLARE_ZONE_ID
-TF_VAR_CUSTOM_DOMAIN_ENABLED
-TF_VAR_CUSTOM_DOMAIN_HOSTNAME
 ```
 
-Use these values:
+Add these GitHub repository variables, not secrets:
 
 ```text
 TF_VAR_CUSTOM_DOMAIN_ENABLED=true
 TF_VAR_CUSTOM_DOMAIN_HOSTNAME=album.yourdomain.com
 ```
+
+The hostname is not sensitive. Keeping it as a repository variable lets GitHub Actions pass the generated Google OAuth redirect URI between jobs and print it in the deployment summary.
 
 Keep the Cloudflare record DNS-only at first. Terraform sets `proxied = false` so Azure can validate the hostname and issue the managed certificate. After the first successful deployment and certificate binding, you can decide whether to proxy it through Cloudflare.
 
