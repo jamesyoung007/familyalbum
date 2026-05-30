@@ -121,7 +121,8 @@ jobs:
 
       - name: Prepare Standalone Artifact
         run: |
-          mkdir -p .next/standalone/.next/static
+          mkdir -p .next/standalone/.next
+          rm -rf .next/standalone/.next/static
           cp -R .next/static .next/standalone/.next/static
           if [ -d public ]; then
             cp -R public .next/standalone/public
