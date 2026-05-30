@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Image from "next/image";
 import { signIn, signOut, useSession } from "next-auth/react";
 
 type Photo = {
@@ -79,7 +80,13 @@ export function Album() {
         </section>
 
         <figure className="heroPhoto" aria-label="Smiling baby photo collage">
-          <img src="/images/baby-collage.jpg" alt="" />
+          <Image
+            src="/images/baby-collage.jpg"
+            alt=""
+            fill
+            priority
+            sizes="(max-width: 720px) calc(100vw - 36px), 420px"
+          />
         </figure>
 
         <div className="actions">
@@ -130,6 +137,8 @@ export function Album() {
             <section className="grid" aria-label="Family photos">
               {photos.map((photo) => (
                 <article className="photo" key={photo.name}>
+                  {/* Signed Azure URLs are already short-lived and should render directly. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={photo.url} alt="Family album upload" />
                   <div className="photoFooter">
                     <span className="photoName" title={photo.name}>
