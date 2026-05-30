@@ -42,16 +42,34 @@ button {
 .masthead {
   align-items: flex-end;
   border-bottom: 1px solid var(--line);
-  display: flex;
+  display: grid;
   gap: 24px;
-  justify-content: space-between;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 420px) auto;
   margin: 0 auto;
   max-width: 1120px;
   padding: 34px 0 28px;
+  position: relative;
+}
+
+.masthead::before {
+  background:
+    radial-gradient(circle at 22px 22px, rgba(185, 111, 83, 0.18) 0 3px, transparent 4px),
+    radial-gradient(circle at 54px 48px, rgba(87, 113, 90, 0.16) 0 2px, transparent 3px);
+  background-size: 76px 76px;
+  content: "";
+  inset: 0 0 auto auto;
+  height: 120px;
+  opacity: 0.55;
+  pointer-events: none;
+  position: absolute;
+  width: 220px;
+  z-index: 0;
 }
 
 .brand {
   max-width: 680px;
+  position: relative;
+  z-index: 1;
 }
 
 .kicker {
@@ -87,6 +105,39 @@ h1 {
   flex-wrap: wrap;
   gap: 12px;
   justify-content: flex-end;
+  position: relative;
+  z-index: 1;
+}
+
+.heroPhoto {
+  align-self: stretch;
+  aspect-ratio: 4 / 3;
+  background: var(--white);
+  border: 1px solid rgba(221, 210, 193, 0.88);
+  border-radius: 8px;
+  box-shadow: 0 18px 40px rgba(42, 35, 25, 0.14);
+  margin: 0;
+  max-height: 250px;
+  min-height: 190px;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.heroPhoto::after {
+  background: linear-gradient(180deg, transparent 58%, rgba(39, 36, 31, 0.18));
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.heroPhoto img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  width: 100%;
 }
 
 .button {
@@ -223,10 +274,17 @@ h1 {
   .masthead {
     align-items: start;
     display: grid;
+    grid-template-columns: 1fr;
   }
 
   .actions {
     justify-content: flex-start;
+  }
+
+  .heroPhoto {
+    max-height: none;
+    min-height: 0;
+    order: -1;
   }
 
   .upload {

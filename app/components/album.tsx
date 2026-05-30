@@ -78,6 +78,10 @@ export function Album() {
           </p>
         </section>
 
+        <figure className="heroPhoto" aria-label="Smiling baby photo collage">
+          <img src="/images/baby-collage.jpg" alt="" />
+        </figure>
+
         <div className="actions">
           {status === "authenticated" ? (
             <>
